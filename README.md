@@ -13,6 +13,8 @@ Launch the docker-compose up, and connect on http://localhost/dolibarr/htdocs to
 
 If you want to change the php version or mysql kernel, launch docker-compose up -d --build
 
+une vidéo youtube présentant l'outil est disponible ici : https://www.youtube.com/watch?v=7FosoJzANSo
+
 ## install setting
 On the database setting
 * use mysql on database server
