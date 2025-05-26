@@ -1,7 +1,6 @@
-version: "3.8"
 services:
   traefik:
-    image: "traefik:2.5.6"
+    image: "traefik:latest"
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -29,7 +28,7 @@ services:
       - "../custom:/var/www/html/dolibarr/htdocs/custom"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.php-apache.rule=Host(`dlb2003.localhost`, `localhost`, `lvh.me`, `pmamp.lvh.me`, `127.0.0.1`)"
+      - "traefik.http.routers.php-apache.rule=Host(`dlb2003.localhost`) || Host(`localhost`) || Host(`lvh.me`) || Host(`pmamp.lvh.me`) || Host(`127.0.0.1`)"
       - "traefik.http.routers.php-apache.entrypoints=web"
 
   mysql:
@@ -37,7 +36,7 @@ services:
     image: "mariadb:latest"
     #image: "mysql:8.0.27"
     # Uncomment line below if you are using a Mac with the M1 chip
-    #platform: linux/amd64
+    #platform: linux/arm64
     depends_on:
       - "traefik"
     volumes:
@@ -54,6 +53,7 @@ services:
       - "traefik.enable=false"
 
   phpmyadmin:
+  # Change line below if you are using a Mac with the M1 chip : image: "lscr.io/linuxserver/phpmyadmin:latest"
     image: "phpmyadmin/phpmyadmin"
     depends_on:
       - "mysql"
@@ -65,8 +65,8 @@ services:
       UPLOAD_LIMIT: "256M"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`pma.localhost`, `pma.lvh.me`)"
-      - "traefik.http.routers.whoami.entrypoints=web"
+      - "traefik.http.routers.phpmyadmin.rule=Host(`pma.localhost`) || Host(`pma.lvh.me`)"
+      - "traefik.http.routers.phpmyadmin.entrypoints=web"
 
 networks:
   default:
