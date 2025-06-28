@@ -26,10 +26,13 @@ services:
   # SELECT HERE THE CORE VERSION OF DOLIBARR
       - "../dolibarr-core/dolibarr-develop:/var/www/html/dolibarr"
       - "../custom:/var/www/html/dolibarr/htdocs/custom"
+      - "../conf:/var/www/html/dolibarr/htdocs/conf"
+      
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.php-apache.rule=Host(`dlb2003.localhost`) || Host(`localhost`) || Host(`lvh.me`) || Host(`pmamp.lvh.me`) || Host(`127.0.0.1`)"
       - "traefik.http.routers.php-apache.entrypoints=web"
+      - "traefik.http.services.php-apache.loadbalancer.server.port=80"
 
   mysql:
   # SELECT HERE THE VERSION OF MYSQL (or something else)
@@ -67,6 +70,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.phpmyadmin.rule=Host(`pma.localhost`) || Host(`pma.lvh.me`)"
       - "traefik.http.routers.phpmyadmin.entrypoints=web"
+      - "traefik.http.services.phpmyadmin.loadbalancer.server.port=80"
 
 networks:
   default:
