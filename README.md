@@ -9,7 +9,7 @@ This stack includes:
 - PHP-FPM to run Dolibarr
 - MariaDB as database
 - Shared Docker network: `traefikNetwork`
-- Optimized for **Apple Silicon (M1/M2)**
+- Optimized for **Apple Silicon**
 
 ---
 
