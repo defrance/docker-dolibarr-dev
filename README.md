@@ -1,131 +1,138 @@
-# docker-dolibarr-dev
+# docker-dolibarr-dev 🚀
 
-A Docker setup dedicated to **development and maintenance of Dolibarr core and modules**.
+A **Docker setup dedicated to development and maintenance of Dolibarr core and modules**, optimized for **Apple Silicon (M1/M2)**, using **Nginx + PHP-FPM + MariaDB + Traefik**. Lightweight, performant, and ready for module/core development.
 
-This stack includes:
-
-- Traefik as HTTPS reverse proxy
-- Nginx as web server
-- PHP-FPM to run Dolibarr
-- MariaDB as database
-- Shared Docker network: `traefikNetwork`
-- Optimized for **Apple Silicon (M1/M2)**
+> ⚠️ **IMAP is disabled by default** to prevent crashes in Dolibarr.
 
 ---
 
-## Why this stack?
+## Why this stack? 💡
 
 ### 1️⃣ Why not phpMyAdmin?
 We decided **not to include phpMyAdmin** to keep the stack lightweight and focused on development.  
-- Developers can connect directly to the database using any MySQL client.  
+- Connect directly to the database using any MySQL client.  
 - For macOS (Apple Silicon), we recommend **[Sequel Ace](https://apps.apple.com/fr/app/sequel-ace/id1518036000?mt=12)** – a free, lightweight, and high-performance database management app.  
-- Reduces unnecessary exposure of database management interfaces.  
+- Reduces unnecessary exposure of database management interfaces.
 
 ### 2️⃣ Why Nginx instead of Apache?
 Nginx is chosen over Apache for several reasons:  
-
-- **Performance and memory efficiency:**  
-  - **Apache** uses a process/thread model where each connection may consume a separate process, which can quickly use a lot of RAM under high load.  
-  - **Nginx** uses an asynchronous, event-driven model, allowing a single process to handle many connections efficiently, making it much lighter in terms of memory.  
-- **Docker-friendly:** Lightweight containers are preferred for development and testing.  
-- **Compatibility:** Works seamlessly with PHP-FPM in a containerized setup.  
-- **Simplicity:** Easier configuration for reverse proxy and SSL with Traefik.  
+- **Performance & memory efficiency:**  
+  - Apache creates a process/thread per connection → higher RAM usage under load.  
+  - Nginx uses an asynchronous, event-driven model → handles many connections efficiently.  
+- **Docker-friendly:** Lightweight containers for development.  
+- **Compatibility:** Works seamlessly with PHP-FPM.  
+- **Simplicity:** Easier configuration for reverse proxy and SSL with Traefik.
 
 ### 3️⃣ Why Traefik?
-Traefik is used as a reverse proxy to simplify HTTPS and routing:  
 - Automatic SSL via Let's Encrypt.  
 - Dynamic routing to containers without manual Nginx configuration.  
-- Easy dashboard to monitor and manage exposed services.  
+- Dashboard to monitor and manage exposed services.
 
 ### 4️⃣ Apple Silicon Compatibility
-- This stack is optimized for **ARM64 architecture**, making it fully compatible with Apple Silicon (M1/M2) Macs.  
-- All images and builds are tested to run smoothly on ARM.
+- Fully optimized for **ARM64 architecture**, making it compatible with M1/M2 Macs.  
+- Images and builds tested to run smoothly on Apple Silicon.
 
 ### 5️⃣ IMAP Warning
 - **IMAP is not installed by default** in this Dolibarr setup.  
-- Enabling IMAP currently may cause **crashes or instability**.  
-- For development purposes, avoid activating IMAP until proper support is added.
+- Enabling IMAP may cause **crashes or instability**.  
+- Avoid activating IMAP until proper support is added.
 
 ---
 
-## Services Overview
+## PHP-FPM – Engine Highlights ⚡
 
-### Traefik – Reverse Proxy
-
-- **Image:** `traefik:latest`
-- **Ports exposed:**
-  - `443` → HTTPS for Dolibarr
-  - `8080` → Traefik dashboard
-- **Features:**
-  - Automatic SSL certificates via Let's Encrypt (`myresolver`)
-  - Dashboard accessible at [http://localhost:8080](http://localhost:8080)
-  - Only Nginx is exposed via Traefik (`traefik.enable=true`)
-- **Volumes:**
-  - `/var/run/docker.sock` → Docker integration
-  - `../letsencrypt` → SSL certificate storage
-
-### PHP-FPM – PHP Engine
-
-- **Built from:** `../php-dockerfile/php-8.4.Dockerfile`
-- **Depends on:** MariaDB (`mysql`)
-- **Volumes:**
-  - Dolibarr core (read/write): `../dolibarr-core/dolibarr-22.0.1:/var/www/html/dolibarr:rw`
-  - Custom plugins: `../custom:/var/www/html/dolibarr/htdocs/custom:rw`
-  - Configuration files: `../conf:/var/www/html/dolibarr/htdocs/conf:rw`
-- **Traefik label:** `traefik.enable=false` → not directly exposed
-- **Role:** Executes Dolibarr PHP code for Nginx
-
-### Nginx – Web Server
-
-- **Image:** `nginx:stable`
-- **Depends on:** PHP-FPM (`php-fpm`)
-- **Volumes:**
-  - Dolibarr core (read-only)
-  - Plugins (accessible)
-  - Nginx configuration: `../nginx/default.conf`
-- **Traefik labels:**
-  - Exposed via HTTPS: `https://localhost/`
-  - EntryPoint: `websecure`
-  - SSL via `myresolver`
-- **Role:** Serves Dolibarr web interface
-
-### MariaDB – Database
-
-- **Image:** `mariadb:latest`
-- **Volumes:** `./dbdata:/var/lib/mysql` (persistent data)
-- **Port exposed:** `3306`
-- **Environment:**
-  - Root password: `rootPASS`
-  - Database: `dolibarr`
-  - User: `dbuser`
-  - Password: `dbpass`
-- **Traefik label:** `traefik.enable=false`
-- **Role:** Stores Dolibarr data
+- **Base image:** `php:8.4-fpm`  
+- **Installed extensions:** `mysqli`, `pdo_mysql`, `zip`, `intl`, `calendar`, `gd`, `opcache`  
+- **OPcache configured:**  
+  - Memory: 128 MB  
+  - Max accelerated files: 4000  
+  - Revalidate frequency: 2 sec  
+  - CLI enabled  
+- **Volumes:**  
+  - Dolibarr core (read/write)  
+  - Custom plugins  
+  - Configuration files  
+- **Role:** Executes Dolibarr PHP code for Nginx  
 
 ---
 
-## Docker Network
+## Synthèse du Dockerfile 🐳
+
+- **Base image:** `php:8.4-fpm`  
+- **Extensions PHP installées:**  
+  - `mysqli`, `pdo`, `pdo_mysql` → accès à MySQL/MariaDB  
+  - `zip`, `intl`, `calendar`, `gd` → support pour Dolibarr core et modules  
+  - `opcache` activé pour améliorer les performances PHP  
+- **Librairies système installées:** `zip`, `unzip`, `curl`, `bash`, `libzip-dev`, `libonig-dev`, `libicu-dev`, `libpng-dev`, `libjpeg-dev`, `libfreetype6-dev`  
+- **GD configuré** avec JPEG et FreeType pour le traitement d’images  
+- **OPcache configuré:**  
+  - 128 MB de mémoire  
+  - 4000 fichiers accélérés  
+  - Revalidation toutes les 2 secondes  
+  - Activation CLI  
+- **Répertoire de travail:** `/var/www/html`  
+- **Port exposé:** `9000` (PHP-FPM)  
+
+---
+
+## Nginx – Web Server
+
+- **Image:** `nginx:stable`  
+- **Serves Dolibarr at root (`/`)**  
+- **Static files caching:** 30 days  
+- **Security:** blocks `.ht*` files  
+- **PHP-FPM connection:** `fastcgi_pass php-fpm:9000`  
+- **Traefik labels:** exposes Dolibarr via HTTPS
+
+---
+
+## Traefik – Reverse Proxy
+
+- **Image:** `traefik:latest`  
+- **Ports:** `443` → HTTPS, `8080` → Dashboard  
+- **Features:**  
+  - Automatic SSL via Let's Encrypt (`myresolver`)  
+  - Dynamic routing to containers  
+  - Dashboard at [http://localhost:8080](http://localhost:8080)
+
+---
+
+## MariaDB – Database
+
+- **Image:** `mariadb:latest`  
+- **Port:** 3306  
+- **Environment:**  
+  - Root: `rootPASS`  
+  - DB: `dolibarr`  
+  - User: `dbuser`  
+  - Password: `dbpass`  
+- **Persistent storage:** `./dbdata`  
+- **Role:** Stores Dolibarr data  
+
+---
+
+## Docker Network 🌐
 
 All services share `traefikNetwork`, allowing:
 
-- Nginx ↔ PHP-FPM communication
-- PHP-FPM ↔ MariaDB communication
+- Nginx ↔ PHP-FPM communication  
+- PHP-FPM ↔ MariaDB communication  
 - Traefik routing HTTPS traffic to Nginx
 
 ---
 
-## Accessing Services
+## Accessing Services 🔑
 
-| Service        | URL / Port                  | Notes                               |
-|----------------|----------------------------|------------------------------------|
-| Dolibarr       | `https://localhost/`        | Via Traefik, HTTPS                  |
-| Traefik dash   | `http://localhost:8080`     | Traefik dashboard                   |
-| MariaDB        | `localhost:3306`            | MySQL client access (Sequel Ace recommended for macOS) |
-| PHP-FPM        | internal                   | Not directly accessible             |
+| Service        | URL / Port                  | Notes |
+|----------------|----------------------------|-------|
+| Dolibarr       | `https://localhost/`        | Via Traefik, HTTPS |
+| Traefik dash   | `http://localhost:8080`     | Dashboard |
+| MariaDB        | `localhost:3306`            | Use Sequel Ace / MySQL client |
+| PHP-FPM        | internal                   | Not directly accessible |
 
 ---
 
-## Quick Start
+## Quick Start ⚡
 
 1. Launch the stack:
 
