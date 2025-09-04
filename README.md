@@ -1,6 +1,6 @@
 # docker-dolibarr-dev 🚀
 
-A **Docker setup dedicated to development and maintenance of Dolibarr core and modules**, optimized for **Apple Silicon (M1/M2)**, using **Nginx + PHP-FPM + MariaDB + Traefik**. Lightweight, performant, and ready for module/core development.
+A **Docker setup dedicated to development and maintenance of Dolibarr core and modules**, optimized for **Apple Silicon**, using **Nginx + PHP-FPM + MariaDB + Traefik**. Lightweight, performant, and ready for module/core development.
 
 > ⚠️ **IMAP is disabled by default** to prevent crashes in Dolibarr.
 
