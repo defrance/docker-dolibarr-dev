@@ -21,10 +21,12 @@ On the database setting
 * tcheck "create database"
 * enter user "root" and root login password 2 times
 ## Other Tools access  
-### phpmyAdmin
-phpmyadmin page are accessible on http://pma.localhost
+### Open port external
+Externally manage base
 ### Traefik
 Traefik page are accessible on http://localhost:8080
+### Secure HTTPS
+HTTPS protocol
 ### pgadmin (if postgres version)
 pgadmin page are accessible on http://pgadmin.localhost
 
