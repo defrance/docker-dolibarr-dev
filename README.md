@@ -9,7 +9,7 @@ This stack includes:
 - PHP-FPM to run Dolibarr
 - MariaDB as database
 - Shared Docker network: `traefikNetwork`
-- Optimized for **Apple Silicon**
+- Optimized for **Apple Silicon (M1/M2)**
 
 ---
 
@@ -17,7 +17,8 @@ This stack includes:
 
 ### 1️⃣ Why not phpMyAdmin?
 We decided **not to include phpMyAdmin** to keep the stack lightweight and focused on development.  
-- Developers can connect directly to the database using any MySQL client (e.g., DBeaver, TablePlus, CLI).  
+- Developers can connect directly to the database using any MySQL client.  
+- For macOS (Apple Silicon), we recommend **[Sequel Ace](https://apps.apple.com/fr/app/sequel-ace/id1518036000?mt=12)** – a free, lightweight, and high-performance database management app.  
 - Reduces unnecessary exposure of database management interfaces.  
 
 ### 2️⃣ Why Nginx instead of Apache?
@@ -119,7 +120,7 @@ All services share `traefikNetwork`, allowing:
 |----------------|----------------------------|------------------------------------|
 | Dolibarr       | `https://localhost/`        | Via Traefik, HTTPS                  |
 | Traefik dash   | `http://localhost:8080`     | Traefik dashboard                   |
-| MariaDB        | `localhost:3306`            | MySQL client access                 |
+| MariaDB        | `localhost:3306`            | MySQL client access (Sequel Ace recommended for macOS) |
 | PHP-FPM        | internal                   | Not directly accessible             |
 
 ---
