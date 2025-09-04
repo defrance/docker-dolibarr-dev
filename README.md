@@ -9,6 +9,7 @@ This stack includes:
 - PHP-FPM to run Dolibarr
 - MariaDB as database
 - Shared Docker network: `traefikNetwork`
+- Optimized for **Apple Silicon (M1/M2)**
 
 ---
 
@@ -34,6 +35,15 @@ Traefik is used as a reverse proxy to simplify HTTPS and routing:
 - Automatic SSL via Let's Encrypt.  
 - Dynamic routing to containers without manual Nginx configuration.  
 - Easy dashboard to monitor and manage exposed services.  
+
+### 4️⃣ Apple Silicon Compatibility
+- This stack is optimized for **ARM64 architecture**, making it fully compatible with Apple Silicon (M1/M2) Macs.  
+- All images and builds are tested to run smoothly on ARM.
+
+### 5️⃣ IMAP Warning
+- **IMAP is not installed by default** in this Dolibarr setup.  
+- Enabling IMAP currently may cause **crashes or instability**.  
+- For development purposes, avoid activating IMAP until proper support is added.
 
 ---
 
