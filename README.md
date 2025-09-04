@@ -12,9 +12,34 @@ This stack includes:
 
 ---
 
+## Why this stack?
+
+### 1️⃣ Why not phpMyAdmin?
+We decided **not to include phpMyAdmin** to keep the stack lightweight and focused on development.  
+- Developers can connect directly to the database using any MySQL client (e.g., DBeaver, TablePlus, CLI).  
+- Reduces unnecessary exposure of database management interfaces.  
+
+### 2️⃣ Why Nginx instead of Apache?
+Nginx is chosen over Apache for several reasons:  
+
+- **Performance and memory efficiency:**  
+  - **Apache** uses a process/thread model where each connection may consume a separate process, which can quickly use a lot of RAM under high load.  
+  - **Nginx** uses an asynchronous, event-driven model, allowing a single process to handle many connections efficiently, making it much lighter in terms of memory.  
+- **Docker-friendly:** Lightweight containers are preferred for development and testing.  
+- **Compatibility:** Works seamlessly with PHP-FPM in a containerized setup.  
+- **Simplicity:** Easier configuration for reverse proxy and SSL with Traefik.  
+
+### 3️⃣ Why Traefik?
+Traefik is used as a reverse proxy to simplify HTTPS and routing:  
+- Automatic SSL via Let's Encrypt.  
+- Dynamic routing to containers without manual Nginx configuration.  
+- Easy dashboard to monitor and manage exposed services.  
+
+---
+
 ## Services Overview
 
-### 1️⃣ Traefik – Reverse Proxy
+### Traefik – Reverse Proxy
 
 - **Image:** `traefik:latest`
 - **Ports exposed:**
@@ -28,9 +53,7 @@ This stack includes:
   - `/var/run/docker.sock` → Docker integration
   - `../letsencrypt` → SSL certificate storage
 
----
-
-### 2️⃣ PHP-FPM – PHP Engine
+### PHP-FPM – PHP Engine
 
 - **Built from:** `../php-dockerfile/php-8.4.Dockerfile`
 - **Depends on:** MariaDB (`mysql`)
@@ -41,9 +64,7 @@ This stack includes:
 - **Traefik label:** `traefik.enable=false` → not directly exposed
 - **Role:** Executes Dolibarr PHP code for Nginx
 
----
-
-### 3️⃣ Nginx – Web Server
+### Nginx – Web Server
 
 - **Image:** `nginx:stable`
 - **Depends on:** PHP-FPM (`php-fpm`)
@@ -57,9 +78,7 @@ This stack includes:
   - SSL via `myresolver`
 - **Role:** Serves Dolibarr web interface
 
----
-
-### 4️⃣ MariaDB – Database
+### MariaDB – Database
 
 - **Image:** `mariadb:latest`
 - **Volumes:** `./dbdata:/var/lib/mysql` (persistent data)
@@ -74,7 +93,7 @@ This stack includes:
 
 ---
 
-## 5️⃣ Docker Network
+## Docker Network
 
 All services share `traefikNetwork`, allowing:
 
@@ -99,4 +118,5 @@ All services share `traefikNetwork`, allowing:
 
 1. Launch the stack:
 
-docker-compose up -d
+```bash
+docker-compose up
