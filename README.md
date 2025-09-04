@@ -135,4 +135,4 @@ All services share `traefikNetwork`, enabling:
 1. Launch the stack:
 
 ```bash
-docker-compose up
+docker-compose up -d
