@@ -26,7 +26,8 @@ services:
   # SELECT HERE THE CORE VERSION OF DOLIBARR
       - "../dolibarr-core/dolibarr-develop:/var/www/html/dolibarr"
       - "../custom:/var/www/html/dolibarr/htdocs/custom"
-      - "../conf:/var/www/html/dolibarr/htdocs/conf"
+      - "./conf:/var/www/html/dolibarr/htdocs/conf"
+      - "./documents:/var/www/html/dolibarr/documents"
       
     labels:
       - "traefik.enable=true"
