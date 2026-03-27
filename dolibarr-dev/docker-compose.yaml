@@ -40,11 +40,11 @@ services:
       - "./documents:/var/www/html/dolibarr/documents"
       - "./install.forced.php:/tmp/install.forced.php:ro"
 
-      
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.php-apache.rule=Host(`dlb2003.localhost`, `localhost`, `lvh.me`, `pmamp.lvh.me`, `127.0.0.1`)"
+      - "traefik.http.routers.php-apache.rule=Host(`dlb.localhost`) || Host(`localhost`) || Host(`lvh.me`) || Host(`pmamp.lvh.me`) || Host(`127.0.0.1`)"
       - "traefik.http.routers.php-apache.entrypoints=web"
+      - "traefik.http.services.php-apache.loadbalancer.server.port=80"
 
   mysql:
     # SELECT HERE THE VERSION OF MYSQL (or something else)
@@ -72,6 +72,7 @@ services:
       - "traefik.enable=false"
 
   phpmyadmin:
+  # Change line below if you are using a Mac with the M1 chip : image: "lscr.io/linuxserver/phpmyadmin:latest"
     image: "phpmyadmin/phpmyadmin"
     depends_on:
       - "mysql"

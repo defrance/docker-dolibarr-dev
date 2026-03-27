@@ -28,7 +28,7 @@ services:
       - "./documents:/var/www/html/dolibarr/documents"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.php-apache.rule=Host(`dlb2003.localhost`, `localhost`, `lvh.me`, `pmamp.lvh.me`, `127.0.0.1`)"
+      - "traefik.http.routers.php-apache.rule=Host(`dlb.localhost`, `localhost`, `lvh.me`, `pmamp.lvh.me`, `127.0.0.1`)"
       - "traefik.http.routers.php-apache.entrypoints=web"
 
   postgres:
