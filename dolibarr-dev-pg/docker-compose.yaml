@@ -22,8 +22,10 @@ services:
       - "traefik"
       - "postgres"
     volumes:
-      - "../dolibarr-core/dolibarr-18.0.6:/var/www/html/dolibarr"
+      - "../dolibarr-core/dolibarr-22.0.0:/var/www/html/dolibarr"
       - "../custom:/var/www/html/dolibarr/htdocs/custom"
+      - "./conf:/var/www/html/dolibarr/htdocs/conf"
+      - "./documents:/var/www/html/dolibarr/documents"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.php-apache.rule=Host(`dlb2003.localhost`, `localhost`, `lvh.me`, `pmamp.lvh.me`, `127.0.0.1`)"
@@ -38,7 +40,7 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: "dbase"
+      POSTGRES_DB: "dolibarr"
       POSTGRES_USER: "dbuser"
       POSTGRES_PASSWORD: "dbpass"
     labels:

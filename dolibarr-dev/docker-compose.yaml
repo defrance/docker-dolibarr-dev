@@ -1,7 +1,6 @@
-version: "3.8"
 services:
   traefik:
-    image: "traefik:2.5.6"
+    image: "traefik:latest"
     command:
       - "--api.insecure=true"
       - "--providers.docker=true"
@@ -16,35 +15,54 @@ services:
   php-apache:
     build:
         context: ../php-dockerfile
-#SELECT HERE YOUR PHP VERSION FOR YOUR ENVIRONMENT
-        dockerfile : php-8.2.Dockerfile
-#        dockerfile : php-7.4.Dockerfile
+        #SELECT HERE YOUR PHP VERSION FOR YOUR ENVIRONMENT
+        dockerfile : php-8.4.Dockerfile
+        #    dockerfile : php-8.2.Dockerfile
+        #    dockerfile : php-7.4.Dockerfile
+    command: >
+      sh -lc "cp /tmp/install.forced.php /var/www/html/dolibarr/htdocs/install/install.forced.php && exec apache2-foreground"
 
+    environment:
+      # Optimisations PHP pour plus de connexions parallèles
+      PHP_MEMORY_LIMIT: "512M"
+      PHP_MAX_EXECUTION_TIME: "300"
+      PHP_MAX_INPUT_TIME: "300"
+      PHP_POST_MAX_SIZE: "128M"
+      PHP_UPLOAD_MAX_FILESIZE: "128M"
     depends_on:
       - "traefik"
       - "mysql"
     volumes:
-  # SELECT HERE THE CORE VERSION OF DOLIBARR
+      # SELECT HERE THE CORE VERSION OF DOLIBARR
       - "../dolibarr-core/dolibarr-develop:/var/www/html/dolibarr"
       - "../custom:/var/www/html/dolibarr/htdocs/custom"
+      - "./conf:/var/www/html/dolibarr/htdocs/conf"
+      - "./documents:/var/www/html/dolibarr/documents"
+      - "./install.forced.php:/tmp/install.forced.php:ro"
+
+      
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.php-apache.rule=Host(`dlb2003.localhost`, `localhost`, `lvh.me`, `pmamp.lvh.me`, `127.0.0.1`)"
       - "traefik.http.routers.php-apache.entrypoints=web"
 
   mysql:
-  # SELECT HERE THE VERSION OF MYSQL (or something else)
+    # SELECT HERE THE VERSION OF MYSQL (or something else)
     image: "mariadb:latest"
     #image: "mysql:8.0.27"
-    # Uncomment line below if you are using a Mac with the M1 chip
+    # Uncomment line below if you are using a Mac with the Silicon chip
     #platform: linux/amd64
     depends_on:
       - "traefik"
     volumes:
-      #- "./mysql_seed.sql:/docker-entrypoint-initdb.d/mysql_seed.sql"
       - "./dbdata:/var/lib/mysql"
     command:
       - "--default-authentication-plugin=mysql_native_password"
+      - "--max_connections=300"
+      - "--innodb_buffer_pool_size=512M"
+      - "--innodb_log_file_size=128M"
+      - "--query_cache_size=0"
+      - "--query_cache_type=0"
     environment:
       MYSQL_ROOT_PASSWORD: "rootPASS"
       MYSQL_DATABASE: "dolibarr"
@@ -65,8 +83,9 @@ services:
       UPLOAD_LIMIT: "256M"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.whoami.rule=Host(`pma.localhost`, `pma.lvh.me`)"
-      - "traefik.http.routers.whoami.entrypoints=web"
+      - "traefik.http.routers.phpmyadmin.rule=Host(`pma.localhost`) || Host(`pma.lvh.me`)"
+      - "traefik.http.routers.phpmyadmin.entrypoints=web"
+      - "traefik.http.services.phpmyadmin.loadbalancer.server.port=80"
 
 networks:
   default:

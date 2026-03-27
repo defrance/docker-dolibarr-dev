@@ -1,0 +1,9 @@
+dolibarr-18-lts/
+dolibarr-[0-9]*/
+dolibarr2301/
+dolibarr-core/*/
+!dolibarr-core/readme.md
+dolibarr-dev/*/
+dolibarr-dev-pg/*/
+dolibarr-isitech/
+.DS_STORE

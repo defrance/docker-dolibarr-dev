@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.1-apache
 
 RUN apt-get update && apt-get install -y \
   imagemagick \
@@ -18,10 +18,3 @@ RUN apt-get update && apt-get install -y \
   && docker-php-ext-install ftp \
   && docker-php-ext-install mysqli \
   && docker-php-ext-install pdo pdo_mysql
-
-# Augmenter les limites PHP
-RUN echo "upload_max_filesize=1G" > /usr/local/etc/php/conf.d/uploads.ini \
- && echo "post_max_size=1G" >> /usr/local/etc/php/conf.d/uploads.ini \
- && echo "memory_limit=2G" >> /usr/local/etc/php/conf.d/uploads.ini \
- && echo "max_execution_time=600" >> /usr/local/etc/php/conf.d/uploads.ini \
- && echo "max_input_time=600" >> /usr/local/etc/php/conf.d/uploads.ini
