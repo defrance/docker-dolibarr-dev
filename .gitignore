@@ -1,9 +1,14 @@
 dolibarr-18-lts/
 dolibarr-[0-9]*/
 dolibarr2301/
+dolibarr2302/
+dolibarr-develop/
 dolibarr-core/*/
-!dolibarr-core/readme.md
+dolibarr-core/readme.md
 dolibarr-dev/*/
 dolibarr-dev-pg/*/
+dolibarr-dev-pg-nginx/*/
+dolibarr-dev-nginx/*/
+
 dolibarr-isitech/
 .DS_STORE

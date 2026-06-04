@@ -1,0 +1,94 @@
+services:
+  traefik:
+    image: "traefik:latest"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  nginx:
+    image: "nginx:latest"
+    depends_on:
+      - "traefik"
+      - "php"
+    volumes:
+      - "./nginx.conf:/etc/nginx/conf.d/default.conf:ro"
+      - "../dolibarr-core/dolibarr-develop:/usr/share/nginx/html/dolibarr"
+      - "../custom:/usr/share/nginx/html/dolibarr/htdocs/custom"
+      - "./conf:/usr/share/nginx/html/dolibarr/htdocs/conf"
+      - "./documents:/usr/share/nginx/html/dolibarr/documents"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.php.rule=Host(`dlb.localhost`) || Host(`localhost`) || Host(`lvh.me`) || Host(`pmamp.lvh.me`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.php.entrypoints=web"
+      - "traefik.http.services.php.loadbalancer.server.port=80"
+
+  php:
+    build:
+        context: ../php-dockerfile
+        #SELECT HERE YOUR PHP VERSION FOR YOUR ENVIRONMENT
+        dockerfile : php-8.2-pg-fpm.Dockerfile
+        #    dockerfile : php-8.2.Dockerfile
+        #    dockerfile : php-7.4.Dockerfile
+
+    environment:
+      # Optimisations PHP pour plus de connexions parallèles
+      PHP_MEMORY_LIMIT: "512M"
+      PHP_MAX_EXECUTION_TIME: "300"
+      PHP_MAX_INPUT_TIME: "300"
+      PHP_POST_MAX_SIZE: "128M"
+      PHP_UPLOAD_MAX_FILESIZE: "128M"
+    depends_on:
+      - "traefik"
+      - "postgres"
+
+    labels:
+      - "traefik.enable=true"
+
+    volumes:
+      - "../dolibarr-core/dolibarr-develop:/usr/share/nginx/html/dolibarr"
+      - "../custom:/usr/share/nginx/html/dolibarr/htdocs/custom"
+      - "./conf:/usr/share/nginx/html/dolibarr/htdocs/conf"
+      - "./documents:/usr/share/nginx/html/dolibarr/documents"
+      - "./install.forced.php:/usr/share/nginx/html/dolibarr/htdocs/install/install.forced.php:ro"
+
+
+  postgres:
+    image: "postgres:latest"
+    depends_on:
+      - "traefik"
+    volumes:
+      - "./dbdata:/var/lib/postgresql"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "dolibarr"
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "rootPASS"
+    labels:
+      - "traefik.enable=false"
+
+
+  pgadmin:
+    image: "dpage/pgadmin4"
+    depends_on:
+      - "postgres"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@example.com"
+      PGADMIN_DEFAULT_PASSWORD: "adminpass"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pgadmin.rule=Host(`pgadmin.localhost`) || Host(`pgadmin.lvh.me`)"
+      - "traefik.http.routers.pgadmin.entrypoints=web"
+    ports:
+      - "5050:80"
+
+networks:
+  default:
+    name: "traefikNetwork"

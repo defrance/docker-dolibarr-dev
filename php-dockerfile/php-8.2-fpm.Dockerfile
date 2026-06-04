@@ -1,23 +1,27 @@
-FROM php:7.4-apache
+FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y \
   imagemagick \
-  libc-client-dev \
   libfreetype6-dev \
   libjpeg62-turbo-dev \
   libmagickwand-dev --no-install-recommends \
   libpng-dev \
-  libkrb5-dev \
+  libssl-dev \
   libxml2-dev \
   libzip-dev \
   && rm -rf /var/lib/apt/lists/* \
-  && a2enmod rewrite \
   && docker-php-ext-install exif calendar intl zip \
   && docker-php-ext-configure gd --with-freetype --with-jpeg && docker-php-ext-install -j$(nproc) gd \
   && pecl install imagick && docker-php-ext-enable imagick \
-  && pecl install xdebug-3.0.0 && docker-php-ext-enable xdebug \
+  && pecl install xdebug && docker-php-ext-enable xdebug \
+  && docker-php-ext-install ftp \
   && docker-php-ext-install bcmath \
-  && docker-php-ext-configure imap --with-kerberos --with-imap-ssl \
-  && docker-php-ext-install imap \
   && docker-php-ext-install mysqli \
   && docker-php-ext-install pdo pdo_mysql
+
+# Augmenter les limites PHP
+RUN echo "upload_max_filesize=1G" > /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "post_max_size=1G" >> /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "memory_limit=2G" >> /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "max_execution_time=600" >> /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "max_input_time=600" >> /usr/local/etc/php/conf.d/uploads.ini

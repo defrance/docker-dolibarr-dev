@@ -1,0 +1,105 @@
+services:
+  traefik:
+    image: "traefik:latest"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  nginx:
+    image: "nginx:latest"
+    depends_on:
+      - "traefik"
+      - "php"
+    volumes:
+      - "./nginx.conf:/etc/nginx/conf.d/default.conf:ro"
+      - "../dolibarr-core/dolibarr-develop:/usr/share/nginx/html/dolibarr"
+      - "../custom:/usr/share/nginx/html/dolibarr/htdocs/custom"
+      - "./conf:/usr/share/nginx/html/dolibarr/htdocs/conf"
+      - "./documents:/usr/share/nginx/html/dolibarr/documents"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.php-apache.rule=Host(`dlb.localhost`) || Host(`localhost`) || Host(`lvh.me`) || Host(`pmamp.lvh.me`) || Host(`127.0.0.1`)"
+      - "traefik.http.routers.php-apache.entrypoints=web"
+      - "traefik.http.services.php-apache.loadbalancer.server.port=80"
+
+  php:
+    build:
+        context: ../php-dockerfile
+        #SELECT HERE YOUR PHP VERSION FOR YOUR ENVIRONMENT
+        dockerfile : php-8.2-fpm.Dockerfile
+        #    dockerfile : php-8.2.Dockerfile
+        #    dockerfile : php-7.4.Dockerfile
+
+    environment:
+      # Optimisations PHP pour plus de connexions parallèles
+      PHP_MEMORY_LIMIT: "512M"
+      PHP_MAX_EXECUTION_TIME: "300"
+      PHP_MAX_INPUT_TIME: "300"
+      PHP_POST_MAX_SIZE: "128M"
+      PHP_UPLOAD_MAX_FILESIZE: "128M"
+    depends_on:
+      - "traefik"
+      - "mysql"
+
+    labels:
+      - "traefik.enable=true"
+
+    volumes:
+      - "../dolibarr-core/dolibarr-develop:/usr/share/nginx/html/dolibarr"
+      - "../custom:/usr/share/nginx/html/dolibarr/htdocs/custom"
+      - "./conf:/usr/share/nginx/html/dolibarr/htdocs/conf"
+      - "./documents:/usr/share/nginx/html/dolibarr/documents"
+
+  mysql:
+    # SELECT HERE THE VERSION OF MYSQL (or something else)
+    image: "mariadb:latest"
+    #image: "mysql:8.0.27"
+    # Uncomment line below if you are using a Mac with the Silicon chip
+    #platform: linux/amd64
+    depends_on:
+      - "traefik"
+    volumes:
+      - "./dbdata:/var/lib/mysql"
+    command:
+      - "--default-authentication-plugin=mysql_native_password"
+      - "--max_connections=300"
+      - "--innodb_buffer_pool_size=512M"
+      - "--innodb_log_file_size=128M"
+      - "--query_cache_size=0"
+      - "--query_cache_type=0"
+    environment:
+      MYSQL_ROOT_PASSWORD: "rootPASS"
+      MYSQL_DATABASE: "dolibarr"
+      MYSQL_USER: "dbuser"
+      MYSQL_PASSWORD: "dbpass"
+    labels:
+      - "traefik.enable=false"
+
+  phpmyadmin:
+    # Change line below if you are using a Mac with the M1 chip 
+    #image: "phpmyadmin/phpmyadmin"
+    image: "arm64v8/phpmyadmin"
+    depends_on:
+      - "mysql"
+    links:
+      - "mysql"
+    environment:
+      PMA_HOST: "mysql"
+      PMA_PORT: "3306"
+      UPLOAD_LIMIT: "256M"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.phpmyadmin.rule=Host(`pma.localhost`) || Host(`pma.lvh.me`)"
+      - "traefik.http.routers.phpmyadmin.entrypoints=web"
+      - "traefik.http.services.phpmyadmin.loadbalancer.server.port=80"
+
+networks:
+  default:
+    name: "traefikNetwork"

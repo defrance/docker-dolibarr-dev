@@ -1,7 +1,8 @@
 FROM php:8.2-apache
+
 RUN apt-get update && apt-get install -y \
   imagemagick \
-  libc-client-dev \
+
   libfreetype6-dev \
   libjpeg62-turbo-dev \
   libmagickwand-dev --no-install-recommends \
