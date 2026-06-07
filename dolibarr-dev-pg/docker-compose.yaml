@@ -36,13 +36,13 @@ services:
     depends_on:
       - "traefik"
     volumes:
-      - "./dbdata:/var/lib/postgresql/data"
+      - "./dbdata:/var/lib/postgresql"
     ports:
       - "5432:5432"
     environment:
       POSTGRES_DB: "dolibarr"
-      POSTGRES_USER: "dbuser"
-      POSTGRES_PASSWORD: "dbpass"
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "rootPASS"
     labels:
       - "traefik.enable=false"
 
