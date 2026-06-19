@@ -87,7 +87,3 @@ services:
       - "traefik.http.routers.phpmyadmin.rule=Host(`pma.localhost`) || Host(`pma.lvh.me`)"
       - "traefik.http.routers.phpmyadmin.entrypoints=web"
       - "traefik.http.services.phpmyadmin.loadbalancer.server.port=80"
-
-networks:
-  default:
-    name: "traefikNetwork"
